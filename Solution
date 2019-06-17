@@ -1,0 +1,123 @@
+#include<iostream>
+#include<stdlib.h>
+#include<limits.h>
+#include <bits/stdc++.h>
+
+using namespace std;
+
+// Function to find price for the longest matching prefix for a given mobile number, if no match is found, then return -1.
+double FindTelecomCost(unordered_map<string,double> PriceTable,const string mob_num)
+{
+    int pref_len = 0;
+    double cost = -1;
+
+    //To iterate through the map to retrieve the prefix and its corresponding price.
+    unordered_map<string, double>:: iterator pref;
+
+    for(pref = PriceTable.begin(); pref != PriceTable.end(); pref++)
+    {
+        string prefix = pref->first;
+
+        //Used so that current iteration prefix of length less than the previous matched prefix is skipped.
+        if(pref_len < prefix.size())
+        {
+            //check if the mobile number has the given prefix
+            if(!strcmp(prefix.c_str(), mob_num.substr(0,prefix.size()).c_str()))
+            {
+                pref_len = prefix.size();
+                cost = pref->second;
+            }
+        }
+    }
+    return cost;
+}
+
+int main()
+{
+    int n;
+
+    //Input the number of telecom operators
+    cout<<"Enter the no. of telecom access providers: ";
+    cin>>n;
+
+    //Create n Prefix-price maps for each corresponding telecom providers
+    unordered_map<string,double> Tel_prices[n];
+
+    //Iterate through Telecom operators prefix-price maps to take in input for the same.
+    for(int i=0;i<n;i++){
+
+        cout<<"For Telecom "<<i+1<<"\n\n";
+
+        int choice = 1;
+        while(choice)
+        {
+            cout<<"Enter the prefix and its corresponding price: ";
+            string pref;
+            double price;
+
+
+            cin>>pref;
+            cin>>price;
+
+            //Check if the prefix entered is numerical, if not, then repeat the input step.
+            while(strspn(pref.c_str(), "0123456789") != pref.size())
+            {
+                cout<<"\n\nThe prefix entered was incorrect. Please enter the prefix and price again: \n\n";
+                cin>>pref;
+                cin>>price;
+            }
+
+            // Remove leading zeroes from the string as prefix don't have such format.
+            while(pref.size()>0 && pref[0]=='0')
+            {
+                pref = pref.substr(1);
+            }
+
+            Tel_prices[i].insert(make_pair(pref,price));
+
+            //Ask if more prefix-price pair needs to be inserted. Enter 1 for Yes, and 0 for No.
+            cout<<"\nDo you want to add prices for more prefixes (1/0): ";
+            cin>>choice;
+            cout<<"\n";
+        }
+    }
+
+    //Enter mobile number.
+    string mob_num;
+    cout<<"\n\nEnter the mobile number: ";
+    cin>>mob_num;
+
+    //Check if the mobile number entered is numerical
+    while(strspn(mob_num.c_str(), "0123456789") != mob_num.size())
+    {
+            cout<<"\n\nThe mobile number entered was incorrect. Please enter again: \n\n";
+            cin>>mob_num;
+    }
+
+    // Remove leading zeroes from the string as mobile number don't have such format.
+    while(mob_num.size()>0 && mob_num[0]=='0')
+    {
+        mob_num = mob_num.substr(1);
+    }
+    //Assign maximum double value to variable cost. We need to iterate through the maps of different telecom providers
+    //to find the minimum cost out of all.
+    double cost = DBL_MAX;
+    for(int i=0;i<n;i++)
+    {
+        double curr_cost = FindTelecomCost(Tel_prices[i], mob_num);
+
+        //We ignore the cost of the telecom operator if its -1. As there are no matching prefix for that mobile number.
+        if(curr_cost != -1)
+        {
+            cost = min(cost, curr_cost);
+        }
+    }
+
+    //Output the cost.
+    if(cost != -1)
+        cout<<"\n\nThe minimum cost is "<<cost<<"\n\n";
+    else
+        cout<<"\n\nThere is no Telecom operator for this mobile number.\n\n";
+
+    return 0;
+}
